@@ -96,7 +96,8 @@ gunzip < install/istat_industria.sql.gz | psql WWW
 ```
 
 ### Boundaries
-You need to place some shapefiles that act as boundaries in `data/shps/boundaries/[cityname].shp`
+You need to place some shapefiles that act as boundaries of the city. These shapefiles have to contain one multi-polygon. They have to be placed in `data/shps/boundaries/[cityname].shp`. 
+You can create them dissolving `the procom` variable from the shapefiles of the Italian census, or by downloading them from OpenStreetMap. I placed an example of boundary in `data/shps/boundaries/milano.*`.
 
 ### Land-use
 
