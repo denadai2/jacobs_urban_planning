@@ -146,7 +146,7 @@ milano,15146
 (be careful to put the last, empty, line.
 
 ### Run the loader
-Whenever you are ready, and you placed all the files in the right directories, you can run the loader:
+Whenever you are ready, and you placed all the files in the right directories, you can run configure the loader `load_data.bash` (variables on the top of the file), the loader:
 
 ```bash
 bash load_data.bash
