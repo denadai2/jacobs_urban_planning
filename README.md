@@ -39,6 +39,8 @@ This will install the following dependencies:
 * [seaborn](https://seaborn.pydata.org/)
 * [scikit-learn](https://github.com/scikit-learn/scikit-learn)
 * [SQLAlchemy](https://www.sqlalchemy.org/)
+* [psycopg](http://initd.org/psycopg/)
+* [geoalchemy2](https://geoalchemy-2.readthedocs.io/en/latest/)
 * [jupyter](http://jupyter.org/)
 
 ### Database initialization
