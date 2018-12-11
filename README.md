@@ -89,7 +89,7 @@ ogr2ogr -f "PostgreSQL" PG:"host=localhost user=[youruser] dbname=WWW" -nlt GEOM
 
 #### Automatic import
 
-Download the files from https://drive.google.com/drive/folders/1M08jizFSa3SFo8e-SebOIVlj2djM44AO?usp=sharing and place them in `install`. Then: 
+Download the files from [Figshare](https://figshare.com/articles/The_Death_and_Life_of_Great_Italian_Cities_A_Mobile_Phone_Data_Perspective/7447409) and place them in `install`. Then: 
 
 ```bash
 gunzip < install/census_areas.sql.gz | psql WWW
