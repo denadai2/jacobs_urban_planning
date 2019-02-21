@@ -99,7 +99,7 @@ gunzip < install/istat_industria.sql.gz | psql WWW
 
 ### Boundaries
 You need to place some shapefiles that act as boundaries of the city. These shapefiles have to contain one multi-polygon. They have to be placed in `data/shps/boundaries/[cityname].shp`. 
-You can create them dissolving the `procom` variable from the shapefiles of the Italian census, or by downloading them from OpenStreetMap. I placed an example of boundary in `data/shps/boundaries/milano.*`.
+If you start from the shapefiles of the Italian census, you can create them dissolving by the `procom` variable, otherwise you can download them from other sources (e.g. from OpenStreetMap). I placed an example of boundary in `data/shps/boundaries/milano.*`.
 
 ### Land-use
 
@@ -107,7 +107,7 @@ Download satellite shapefiles from https://land.copernicus.eu/local/urban-atlas/
 
 ### OpenStreetMap
 
-You should download an extract (pbf file) and place it in `data/OSM/[cityname].pbf`. For Italy I suggest http://osm-estratti.wmflabs.org/estratti/.
+You should download an extract (pbf file) and place it in `data/OSM/[cityname].pbf`. For Italy I suggest http://osm-estratti.wmflabs.org/estratti/ or https://www.geofabrik.de/data/download.html.
 
 ### Companies
 
