@@ -124,11 +124,12 @@ CREATE TABLE cities (
 --
 
 CREATE MATERIALIZED VIEW istat_sezioni AS
- SELECT st_multi(st_union(census_areas.geom)) AS geom,
-    census_areas.ace,
-    census_areas.pro_com
-   FROM census_areas
-  GROUP BY census_areas.ace, census_areas.pro_com
+ SELECT st_multi(st_union(c.geom)) AS geom,
+    c.ace,
+    c.pro_com
+   FROM census_areas c
+  INNER JOIN cities c2 ON c2.pro_com = c.pro_com
+  GROUP BY c.ace, c.pro_com
   WITH NO DATA;
 
 
@@ -193,7 +194,8 @@ ALTER SEQUENCE atlas_gid_seq OWNED BY atlas.gid;
 --
 
 CREATE TABLE railways (
-    geom geometry(MultiPolygon,4326)
+    geom geometry(MultiPolygon,4326),
+    city text
 );
 CREATE INDEX ON railways USING GIST (geom);
 
@@ -215,8 +217,8 @@ where not ST_IsEmpty(geom);
 CREATE TABLE buildings (
     gid integer NOT NULL,
     geom geometry(MultiPolygon,4326),
-    city character varying(100),
-    osm_id character varying(254)
+    city text,
+    osm_id text
 );
 
 
@@ -282,7 +284,8 @@ CREATE TABLE companies (
     long double precision,
     lat double precision,
     dimension text,
-    geom geometry
+    geom geometry,
+    city text
 );
 
 
@@ -299,10 +302,11 @@ CREATE TABLE companies_temp (
 
 CREATE TABLE foursquare_venues (
     gridcell integer,
-    category character varying(200),
+    category text,
     geom geometry(Point,4326),
-    name character varying(200),
-    venueid character varying(200)
+    name text,
+    venueid text,
+    city text
 );
 
 
@@ -497,7 +501,9 @@ CREATE TABLE istat_industria (
 
 CREATE TABLE parks (
     osm_id bigint,
-    geom geometry(MultiPolygon,4326)
+    geom geometry(MultiPolygon,4326),
+    city text,
+    geoarea float
 );
 
 
@@ -512,7 +518,7 @@ CREATE TABLE roads (
     highway character varying(254),
     junction character varying(254),
     name character varying(254),
-    city character varying(100),
+    city text,
     geom geometry(LineString,4326)
 );
 
@@ -775,7 +781,7 @@ CREATE TABLE temp_boundaries (
     "PORT" text,
     "AREA_SQK" double precision,
     "URBC_CODE" text,
-    geom geometry(Polygon,4326),
+    geom geometry(MultiPolygon,4326),
     cities character varying(254),
     luz_or_cit character varying(254),
     code character varying(7),
@@ -835,7 +841,10 @@ ALTER TABLE ONLY census_areas
 
 ALTER TABLE ONLY cities
     ADD CONSTRAINT cities_pkey PRIMARY KEY (name, pro_com);
-
+ALTER TABLE ONLY cities
+    ADD CONSTRAINT cities_ukey UNIQUE (pro_com);
+ALTER TABLE ONLY cities
+    ADD CONSTRAINT cities_ukey2 UNIQUE (name);
 
 --
 -- Name: temp_atlas temp_atlas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
@@ -844,6 +853,27 @@ ALTER TABLE ONLY cities
 ALTER TABLE ONLY temp_atlas
     ADD CONSTRAINT temp_atlas_pkey PRIMARY KEY (ogc_fid);
 
+
+ALTER TABLE atlas
+    ADD CONSTRAINT fk_atlas FOREIGN KEY (city) REFERENCES cities (name) ON UPDATE RESTRICT ON DELETE CASCADE;
+
+ALTER TABLE buildings
+    ADD CONSTRAINT fk_buildings FOREIGN KEY (city) REFERENCES cities (name) ON UPDATE RESTRICT ON DELETE CASCADE;
+
+ALTER TABLE roads
+    ADD CONSTRAINT fk_roads FOREIGN KEY (city) REFERENCES cities (name) ON UPDATE RESTRICT ON DELETE CASCADE;
+
+ALTER TABLE companies
+    ADD CONSTRAINT fk_companies FOREIGN KEY (city) REFERENCES cities (name) ON UPDATE RESTRICT ON DELETE CASCADE;
+
+ALTER TABLE foursquare_venues
+    ADD CONSTRAINT fk_foursquare_venues FOREIGN KEY (city) REFERENCES cities (name) ON UPDATE RESTRICT ON DELETE CASCADE;
+
+ALTER TABLE railways
+    ADD CONSTRAINT fk_railways FOREIGN KEY (city) REFERENCES cities (name) ON UPDATE RESTRICT ON DELETE CASCADE;
+
+ALTER TABLE parks
+    ADD CONSTRAINT fk_parks FOREIGN KEY (city) REFERENCES cities (name) ON UPDATE RESTRICT ON DELETE CASCADE;
 
 --
 -- Name: atlas_area_novac_ace_pro_com_idx; Type: INDEX; Schema: public; Owner: -
@@ -886,7 +916,7 @@ CREATE INDEX atlas_railways_pro_com_idx ON atlas_railways USING btree (pro_com);
 
 CREATE INDEX atlas_sezioni_ace_pro_com_idx ON atlas_sezioni USING btree (ace, pro_com);
 
-
+CREATE INDEX ON atlas_sezioni USING btree (pro_com, ace);
 --
 -- Name: atlas_sezioni_code_idx; Type: INDEX; Schema: public; Owner: -
 --
@@ -907,6 +937,8 @@ CREATE INDEX atlas_sezioni_geom_idx ON atlas_sezioni USING gist (geom);
 
 CREATE INDEX atlas_sezioni_gid_idx ON atlas_sezioni USING btree (gid);
 
+
+create index on buildings USING gist (geom);
 
 --
 -- Name: buildings_sezioni_ace_pro_com_idx; Type: INDEX; Schema: public; Owner: -
@@ -1004,8 +1036,13 @@ CREATE INDEX istat_sezioni_geom_idx ON istat_sezioni USING gist (geom);
 --
 
 CREATE INDEX parks_geom_idx ON parks USING gist (geom);
+CREATE INDEX ON parks (geoarea);
 
 
+create index on roads (gid);
+create index on roads (highway);
+create index on roads using gist (geom);
+create index on roads (city);
 --
 -- Name: roads_2ways_p_idx; Type: INDEX; Schema: public; Owner: -
 --
@@ -1136,13 +1173,10 @@ SELECT distinct v.venueid, category, pro_com, ace
 from foursquare_venues v 
 inner join istat_sezioni s on ST_Within(v.geom, s.geom);
 
-create materialized view roads_buffered as
-SELECT ST_Buffer(roads_union.geom, 0.00005) as geom, pro_com, ace
-FROM roads_union;
-create index on roads_buffered (ace, pro_com);
-
 create materialized view buildings_union as
-select ST_Multi(ST_Union(geom)) as geom, city, buildings.gid from buildings GROUP BY city, gid;
+select ST_Multi(ST_Union(geom)) as geom, city, buildings.gid from buildings GROUP BY city, gid
+  WITH NO DATA;
+
 create index on buildings_union (city);
 create index on buildings_union USING GIST (geom);
 

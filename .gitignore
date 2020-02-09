@@ -62,6 +62,7 @@ target/
 .ipynb_checkpoints
 
 #mine
+.DS_Store
 .idea/
 install/census_areas.sql.gz
 install/istat_indicatori.sql.gz
