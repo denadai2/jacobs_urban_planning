@@ -1,6 +1,6 @@
 pandas==0.22.0
 numpy==1.14.2
-scipy==1.0.0
+scipy==1.10.0
 seaborn==0.8.1
 matplotlib==2.2.2
 SQLAlchemy==1.2.6
